@@ -1,0 +1,50 @@
+#!/bin/bash
+
+main() {
+    build_image "signing"
+
+    build_image "consensus-poet-common"
+
+    build_image "utility-ias_client"
+
+    build_image "sdk-python"
+
+    build_image "cli"
+
+    build_image "families-settings"
+
+    build_image "families-identity"
+
+    build_image "rest_api"
+
+    build_image "sdk-examples-intkey_python"
+
+    build_image "sdk-examples-xo_python"
+
+    build_image "validator"
+
+    build_image "consensus-poet-families"
+
+    build_image "consensus-poet-simulator"
+
+    build_image "consensus-poet-core"
+
+    build_image "utility-ias_proxy"
+
+    build_image "consensus-poet-cli"
+
+    build_image "consensus-poet-sgx"
+}
+
+info() {
+    echo -e "\033[0;35m\n[--- $1 ---]\n\033[0m"
+}
+
+build_image() {
+    cd $1
+    info "building $1"
+    docker build -t $1 .
+    cd ..
+}
+
+main

@@ -1,0 +1,50 @@
+#!/bin/bash
+
+set -e
+
+main() {
+    build_package "signing"
+
+    build_package "consensus-poet-common"
+
+    build_package "utility-ias_client"
+
+    build_package "sdk-python"
+
+    build_package "cli"
+
+    build_package "families-settings"
+
+    build_package "families-identity"
+
+    build_package "rest_api"
+
+    build_package "sdk-examples-intkey_python"
+
+    build_package "sdk-examples-xo_python"
+
+    build_package "validator"
+
+    build_package "consensus-poet-families"
+
+    build_package "consensus-poet-simulator"
+
+    build_package "consensus-poet-core"
+
+    build_package "utility-ias_proxy"
+
+    build_package "consensus-poet-cli"
+
+    build_package "consensus-poet-sgx"
+}
+
+info() {
+    echo -e "\033[0;35m\n[--- $1 ---]\n\033[0m"
+}
+
+build_package() {
+    info "building $1"
+    docker run --rm -v $(pwd):/project/sawtooth-core $1
+}
+
+main
