@@ -6,12 +6,12 @@ SDK API Reference
 Python
 ------
 
-.. toctree::
-   :maxdepth: 1
 
-   Transaction Processor <sdks/python_sdk/processor.rst>
+- `Transaction Processor
+  <https://sawtooth.hyperledger.org/docs/python_sdk/releases/latest/processor.html>`__
 
-   Signing <sdks/python_sdk/sawtooth_signing.rst>
+- `Signing
+  <https://sawtooth.hyperledger.org/docs/python_sdk/releases/latest/sawtooth_signing.html>`__
 
 Go
 --
