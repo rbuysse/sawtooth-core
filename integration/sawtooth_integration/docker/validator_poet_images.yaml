@@ -1,0 +1,330 @@
+# Copyright 2019 Cargill Incorporated
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ------------------------------------------------------------------------------
+
+version: "2.1"
+
+volumes:
+  sawtooth-keys-0:
+  sawtooth-db-0:
+  sawtooth-keys-1:
+  sawtooth-db-1:
+  sawtooth-keys-2:
+  sawtooth-db-2:
+  sawtooth-keys-3:
+  sawtooth-db-3:
+  sawtooth-keys-4:
+  sawtooth-db-4:
+  poet-test-data:
+
+services:
+
+
+# -------------=== validators ===-------------
+
+  validator-0:
+    image: hyperledger/sawtooth-validator:nightly
+    volumes:
+      - sawtooth-keys-0:/etc/sawtooth/keys
+      - sawtooth-db-0:/var/lib/sawtooth
+      - poet-liveness-data:/data/tests/poet
+    expose:
+      - 4004
+      - 8800
+    working_dir: /root
+    command: "bash -c \"\
+        while [[ ! -f /data/tests/poet/validator-0.toml ]];
+        do sleep 1; done && \
+        cp /data/tests/poet/validator-0.toml /etc/sawtooth/validator.toml && \
+        sawadm keygen --force && \
+        while [[ ! -f /var/lib/sawtooth/genesis.batch ]];
+        do sleep 1; done && \
+        sawtooth-validator -v
+    \""
+    stop_signal: SIGKILL
+
+  validator-1:
+    image: hyperledger/sawtooth-validator:nightly
+    volumes:
+      - sawtooth-keys-1:/etc/sawtooth/keys
+      - sawtooth-db-1:/var/lib/sawtooth
+      - poet-liveness-data:/data/tests/poet
+    expose:
+      - 4004
+      - 8800
+    command: "bash -c \"\
+        while [[ ! -f /data/tests/poet/validator-1.toml ]];
+        do sleep 1; done && \
+        cp /data/tests/poet/validator-1.toml /etc/sawtooth/validator.toml && \
+        sawadm keygen --force && \
+        sawtooth-validator -v
+    \""
+    stop_signal: SIGKILL
+
+  validator-2:
+    image: hyperledger/sawtooth-validator:nightly
+    volumes:
+      - sawtooth-keys-2:/etc/sawtooth/keys
+      - sawtooth-db-2:/var/lib/sawtooth
+      - poet-liveness-data:/data/tests/poet
+    expose:
+      - 4004
+      - 8800
+    command: "bash -c \"\
+        while [[ ! -f /data/tests/poet/validator-2.toml ]];
+        do sleep 1; done && \
+        cp /data/tests/poet/validator-2.toml /etc/sawtooth/validator.toml && \
+        sawadm keygen --force && \
+        sawtooth-validator -v
+    \""
+    stop_signal: SIGKILL
+
+  validator-3:
+    image: hyperledger/sawtooth-validator:nightly
+    volumes:
+      - sawtooth-keys-3:/etc/sawtooth/keys
+      - sawtooth-db-3:/var/lib/sawtooth
+      - poet-liveness-data:/data/tests/poet
+    expose:
+      - 4004
+      - 8800
+    command: "bash -c \"\
+        while [[ ! -f /data/tests/poet/validator-3.toml ]];
+        do sleep 1; done && \
+        cp /data/tests/poet/validator-3.toml /etc/sawtooth/validator.toml && \
+        sawadm keygen --force && \
+        sawtooth-validator -v
+    \""
+    stop_signal: SIGKILL
+
+  validator-4:
+    image: hyperledger/sawtooth-validator:nightly
+    volumes:
+      - sawtooth-keys-4:/etc/sawtooth/keys
+      - sawtooth-db-4:/var/lib/sawtooth
+      - poet-liveness-data:/data/tests/poet
+    expose:
+      - 4004
+      - 8800
+    command: "bash -c \"\
+        while [[ ! -f /data/tests/poet/validator-4.toml ]];
+        do sleep 1; done && \
+        cp /data/tests/poet/validator-4.toml /etc/sawtooth/validator.toml && \
+        sawadm keygen --force && \
+        sawtooth-validator -v
+    \""
+    stop_signal: SIGKILL
+
+
+# -------------=== rest api ===-------------
+
+  rest-api-0:
+    image: hyperledger/sawtooth-rest-api:nightly
+    expose:
+      - 4004
+      - 8008
+    command: sawtooth-rest-api --connect tcp://validator-0:4004 --bind rest-api-0:8008
+    stop_signal: SIGKILL
+
+  rest-api-1:
+    image: hyperledger/sawtooth-rest-api:nightly
+    volumes:
+      - $SAWTOOTH_CORE:/project/sawtooth-core
+    expose:
+      - 4004
+      - 8008
+    command: sawtooth-rest-api --connect tcp://validator-1:4004 --bind rest-api-1:8008
+    stop_signal: SIGKILL
+
+  rest-api-2:
+    image: hyperledger/sawtooth-rest-api:nightly
+    volumes:
+      - $SAWTOOTH_CORE:/project/sawtooth-core
+    expose:
+      - 4004
+      - 8008
+    command: sawtooth-rest-api --connect tcp://validator-2:4004 --bind rest-api-2:8008
+    stop_signal: SIGKILL
+
+  rest-api-3:
+    image: hyperledger/sawtooth-rest-api:nightly
+    volumes:
+      - $SAWTOOTH_CORE:/project/sawtooth-core
+    expose:
+      - 4004
+      - 8008
+    command: sawtooth-rest-api --connect tcp://validator-3:4004 --bind rest-api-3:8008
+    stop_signal: SIGKILL
+
+  rest-api-4:
+    image: hyperledger/sawtooth-rest-api:nightly
+    volumes:
+      - $SAWTOOTH_CORE:/project/sawtooth-core
+    expose:
+      - 4004
+      - 8008
+    command: sawtooth-rest-api --connect tcp://validator-4:4004 --bind rest-api-4:8008
+    stop_signal: SIGKILL
+
+
+# -------------=== intkey tp ===-------------
+
+  intkey-tp-0:
+    image: hyperledger/sawtooth-intkey-tp-go:nightly
+    expose:
+      - 4004
+    command: intkey-tp-go -C tcp://validator-0:4004
+    stop_signal: SIGKILL
+
+  intkey-tp-1:
+    image: hyperledger/sawtooth-intkey-tp-go:nightly
+    expose:
+      - 4004
+    command: intkey-tp-go -C tcp://validator-1:4004
+    stop_signal: SIGKILL
+
+  intkey-tp-2:
+    image: hyperledger/sawtooth-intkey-tp-go:nightly
+    expose:
+      - 4004
+    command: intkey-tp-go -C tcp://validator-2:4004
+    stop_signal: SIGKILL
+
+  intkey-tp-3:
+    image: hyperledger/sawtooth-intkey-tp-go:nightly
+    expose:
+      - 4004
+    command: intkey-tp-go -C tcp://validator-3:4004
+    stop_signal: SIGKILL
+
+  intkey-tp-4:
+    image: hyperledger/sawtooth-intkey-tp-go:nightly
+    expose:
+      - 4004
+    command: intkey-tp-go -C tcp://validator-4:4004
+    stop_signal: SIGKILL
+
+
+# -------------=== smallbank tp ===-------------
+
+  smallbank-tp-0:
+    image: hyperledger/sawtooth-smallbank-tp-go:nightly
+    expose:
+      - 4004
+    command: smallbank-tp-go -C tcp://validator-0:4004
+    stop_signal: SIGKILL
+
+  smallbank-tp-1:
+    image: hyperledger/sawtooth-smallbank-tp-go:nightly
+    expose:
+      - 4004
+    command: smallbank-tp-go -C tcp://validator-1:4004
+    stop_signal: SIGKILL
+
+  smallbank-tp-2:
+    image: hyperledger/sawtooth-smallbank-tp-go:nightly
+    expose:
+      - 4004
+    command: smallbank-tp-go -C tcp://validator-2:4004
+    stop_signal: SIGKILL
+
+  smallbank-tp-3:
+    image: hyperledger/sawtooth-smallbank-tp-go:nightly
+    expose:
+      - 4004
+    command: smallbank-tp-go -C tcp://validator-3:4004
+    stop_signal: SIGKILL
+
+  smallbank-tp-4:
+    image: hyperledger/sawtooth-smallbank-tp-go:nightly
+    expose:
+      - 4004
+    command: smallbank-tp-go -C tcp://validator-4:4004
+    stop_signal: SIGKILL
+
+
+# -------------=== settings tp ===-------------
+
+  settings-tp-0:
+    image: hyperledger/sawtooth-settings-tp:nightly
+    expose:
+      - 4004
+    command: settings-tp -C tcp://validator-0:4004
+    stop_signal: SIGKILL
+
+  settings-tp-1:
+    image: hyperledger/sawtooth-settings-tp:nightly
+    expose:
+      - 4004
+    command: settings-tp -C tcp://validator-1:4004
+    stop_signal: SIGKILL
+
+  settings-tp-2:
+    image: hyperledger/sawtooth-settings-tp:nightly
+    expose:
+      - 4004
+    command: settings-tp -C tcp://validator-2:4004
+    stop_signal: SIGKILL
+
+  settings-tp-3:
+    image: hyperledger/sawtooth-settings-tp:nightly
+    expose:
+      - 4004
+    command: settings-tp -C tcp://validator-3:4004
+    stop_signal: SIGKILL
+
+  settings-tp-4:
+    image: hyperledger/sawtooth-settings-tp:nightly
+    expose:
+      - 4004
+    command: settings-tp -C tcp://validator-4:4004
+    stop_signal: SIGKILL
+
+
+# -------------=== block info tp ===-------------
+
+  block-info-tp-0:
+    image: hyperledger/sawtooth-block-info-tp:nightly
+    expose:
+      - 4004
+    command: block-info-tp -C tcp://validator-0:4004
+    stop_signal: SIGKILL
+
+  block-info-tp-1:
+    image: hyperledger/sawtooth-block-info-tp:nightly
+    expose:
+      - 4004
+    command: block-info-tp -C tcp://validator-1:4004
+    stop_signal: SIGKILL
+
+  block-info-tp-2:
+    image: hyperledger/sawtooth-block-info-tp:nightly
+    expose:
+      - 4004
+    command: block-info-tp -C tcp://validator-2:4004
+    stop_signal: SIGKILL
+
+  block-info-tp-3:
+    image: hyperledger/sawtooth-block-info-tp:nightly
+    expose:
+      - 4004
+    command: block-info-tp -C tcp://validator-3:4004
+    stop_signal: SIGKILL
+
+  block-info-tp-4:
+    image: hyperledger/sawtooth-block-info-tp:nightly
+    expose:
+      - 4004
+    command: block-info-tp -C tcp://validator-4:4004
+    stop_signal: SIGKILL
