@@ -56,28 +56,51 @@ RUN apt-get install -y -q \
     python3-zmq \
     unzip
 
-RUN curl -OLsS https://github.com/google/protobuf/releases/download/v3.5.1/protoc-3.5.1-linux-x86_64.zip \
- && unzip protoc-3.5.1-linux-x86_64.zip -d protoc3 \
- && rm protoc-3.5.1-linux-x86_64.zip
+ENV PATH=$PATH:/root/.cargo/bin:/build/bin
 
+ENV PYTHONPATH=$PYTHONPATH:/build/validator/
+ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/build/validator/lib/
+
+# Install Rust
 RUN curl https://sh.rustup.rs -sSf > /usr/bin/rustup-init \
  && chmod +x /usr/bin/rustup-init \
  && rustup-init -y
 
-ENV PATH=$PATH:/project/sawtooth-core/bin:/protoc3/bin:/project/sawtooth-core/bin:/root/.cargo/bin \
-    CARGO_INCREMENTAL=0
+# Install protoc
+RUN curl -OLsS https://github.com/google/protobuf/releases/download/v3.5.1/protoc-3.5.1-linux-x86_64.zip \
+    && unzip -o protoc-3.5.1-linux-x86_64.zip -d /usr/local \
+    && rm protoc-3.5.1-linux-x86_64.zip
+
+# Copy dependencies
+COPY /bin/protogen /build/bin/protogen
+COPY /protos /build/protos
 
 RUN ln -s /usr/bin/python3 /usr/bin/python
 
-RUN mkdir -p /etc/sawtooth/keys
-RUN mkdir -p /var/lib/sawtooth
-RUN mkdir -p /var/log/sawtooth
+# Create empty cargo project for validator
+WORKDIR /build
+RUN USER=root cargo new --bin validator
 
-ENV PATH=$PATH:/project/sawtooth-core/bin
+# Copy over Cargo.toml
+COPY validator/build.rs /build/validator/build.rs
+COPY validator/Cargo.toml /build/validator/Cargo.toml
 
-WORKDIR /project/sawtooth-core
+# Make an empty lib.rs to satisfy cargo
+RUN touch validator/src/lib.rs
 
-CMD echo "\033[0;32m--- Building validator ---\n\033[0m" \
+# Do a release build to cache dependencies
+WORKDIR /build/validator
+RUN cargo build --release
+
+# Remove the auto-generated .rs files and the built files
+RUN rm src/*.rs
+RUN rm target/release/*validator* target/release/deps/*validator*
+
+COPY . /build
+
+WORKDIR /build
+
+RUN echo "\033[0;32m--- Building validator ---\n\033[0m" \
  && ./bin/protogen \
  && cd validator \
  && if [ -d "debian" ]; then rm -rf debian; fi \
@@ -91,3 +114,7 @@ CMD echo "\033[0;32m--- Building validator ---\n\033[0m" \
  && cargo build --release \
  && cp ./target/release/sawtooth-validator bin/sawtooth-validator \
  && cp ./target/release/libsawtooth_validator.so lib/libsawtooth_validator.so
+
+RUN mkdir -p /etc/sawtooth/keys
+RUN mkdir -p /var/lib/sawtooth
+RUN mkdir -p /var/log/sawtooth
