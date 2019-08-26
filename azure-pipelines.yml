@@ -1,0 +1,99 @@
+schedules:  
+  - cron: "0 3 * * *"
+    displayName: Nightly build
+    branches:
+      include:
+      - master
+    always: true
+
+jobs:
+
+# --------==== Lint Sawtooth ====--------
+  - job: lint_sawtooth
+    displayName: 'Lint Sawtooth'
+    timeoutInMinutes: 120
+    pool:
+      vmImage: 'ubuntu-16.04'
+    steps:
+      - bash: docker-compose -f docker/compose/run-lint.yaml build
+        displayName: 'Built linting images'
+      - bash: docker-compose -f docker/compose/sawtooth-build.yaml up rest-api
+        displayName: 'Build sawtooth'
+      - bash: docker-compose -f docker/compose/run-lint.yaml up --abort-on-container-exit --exit-code-from lint-python lint-python
+        displayName: 'Lint Python'
+      - bash: docker-compose -f docker/compose/run-lint.yaml up --abort-on-container-exit --exit-code-from lint-rust lint-rust
+        displayName: 'Lint rust'
+      - bash: docker-compose -f docker/compose/run-lint.yaml up --abort-on-container-exit --exit-code-from lint-validator lint-validator
+        displayName: 'Lint validator'
+
+# --------==== Run Tests ====--------
+  - job: test_sawtooth
+    displayName: 'Run tests'
+    timeoutInMinutes: 240
+    pool:
+      vmImage: 'ubuntu-16.04'
+    steps:
+      - bash: docker-compose -f docker-compose-installed.yaml build
+        displayName: 'Build installed images'
+      - bash: docker-compose -f docker/compose/sawtooth-build.yaml up
+      - bash: INSTALL_TYPE="" ./bin/run_tests -i deployment
+        displayName: 'Run tests'
+      - bash: docker run --rm -v $(pwd):/project/sawtooth-core integration-tests /bin/bash -c "cd coverage && coverage combine && coverage html -d html"
+        displayName: "Compile coverage report"
+      - task: PublishBuildArtifacts@1
+        inputs:
+          PathtoPublish: coverage/html/
+          ArtifactName: coveragereport
+
+# --------==== Compile deb packages ====--------
+  - job: artifacts
+    displayName: 'Compile deb packages'
+    timeoutInMinutes: 120
+    steps:
+      - bash: docker-compose -f docker-compose-installed.yaml build
+        displayName: 'Build installed images'
+      - bash: docker-compose -f docker/compose/copy-debs.yaml up
+        displayName: 'Archive debs'
+      - task: PublishBuildArtifacts@1
+        inputs:
+          PathtoPublish: build/debs/
+          ArtifactName: debs
+
+# --------==== Run Bandit ====--------
+  - job: bandit
+    displayName: 'Run bandit'
+    pool:
+      vmImage: 'ubuntu-16.04'
+    steps:
+      - bash: docker build -f docker/bandit -t bandit .
+        displayName: 'Build Bandit image'
+      - bash: docker run --rm -v $(pwd):/project/sawtooth-core bandit run_bandit
+        displayName: 'Run bandit'
+      - task: PublishBuildArtifacts@1
+        inputs:
+          PathtoPublish: build/bandit.html
+          ArtifactName: bandit
+
+# --------==== Build "external" images ====--------
+  - job: external_junk
+    displayName: 'Build "external" images'
+    steps:
+      - bash: docker-compose -f docker/compose/external.yaml build
+        displayName: 'Build external images'
+  
+# --------==== Build docs ====--------
+  - job: docs
+    displayName: 'Build docs'
+    pool:
+      vmImage: 'ubuntu-16.04'
+    steps:
+      - bash: docker build . -f ci/sawtooth-build-docs -t sawtooth-build-docs
+        displayName: 'Build docs image'
+      - bash: docker-compose -f docker/compose/sawtooth-build.yaml up rest-api
+        displayName: 'protos?'
+      - bash: docker run --rm -v $(pwd):/project/sawtooth-core sawtooth-build-docs
+        displayName: 'Build docs'
+      - task: PublishBuildArtifacts@1
+        inputs:
+          PathtoPublish: docs/build
+          ArtifactName: docs_html
