@@ -24,6 +24,8 @@ services:
         - http_proxy
         - https_proxy
         - no_proxy
+        - REPO_VERSION
+        - CARGO_ARGS
     image: sawtooth-settings-tp:${ISOLATION_ID}
     container_name: sawtooth-settings-tp-default
     depends_on:
@@ -38,6 +40,8 @@ services:
         - http_proxy
         - https_proxy
         - no_proxy
+        - REPO_VERSION
+        - CARGO_ARGS
     image: sawtooth-validator:${ISOLATION_ID}
     container_name: sawtooth-validator-default
     expose:
@@ -86,6 +90,8 @@ services:
         - http_proxy
         - https_proxy
         - no_proxy
+        - REPO_VERSION
+        - CARGO_ARGS
     image: sawtooth-shell:${ISOLATION_ID}
     container_name: sawtooth-shell-default
     depends_on:
@@ -121,6 +127,8 @@ services:
         - http_proxy
         - https_proxy
         - no_proxy
+        - REPO_VERSION
+        - CARGO_ARGS
     image: sawtooth-admin-tools:${ISOLATION_ID}
     container_name: sawtooth-admin-tools
 
@@ -143,6 +151,9 @@ services:
         - http_proxy
         - https_proxy
         - no_proxy
+        - REPO_VERSION
+        - CARGO_ARGS
+
     image: sawtooth-block-info-tp:${ISOLATION_ID}
     container_name: sawtooth-block-info-tp-default
 
@@ -154,6 +165,8 @@ services:
         - http_proxy
         - https_proxy
         - no_proxy
+        - REPO_VERSION
+        - CARGO_ARGS
     image: sawtooth-identity-tp:${ISOLATION_ID}
     container_name: sawtooth-identity-tp-default
 
@@ -176,6 +189,8 @@ services:
         - http_proxy
         - https_proxy
         - no_proxy
+        - REPO_VERSION
+        - CARGO_ARGS
     image: sawtooth-smallbank-workload:${ISOLATION_ID}
     container_name: sawtooth-smallbank-workload
 
@@ -187,6 +202,8 @@ services:
         - http_proxy
         - https_proxy
         - no_proxy
+        - REPO_VERSION
+        - CARGO_ARGS
     image: sawtooth-intkey-workload:${ISOLATION_ID}
     container_name: sawtooth-intkey-workload
 
@@ -198,6 +215,8 @@ services:
         - http_proxy
         - https_proxy
         - no_proxy
+        - REPO_VERSION
+        - CARGO_ARGS
     image: sawtooth-smallbank-tp-rust:${ISOLATION_ID}
     container_name: sawtooth-tp-rust
 

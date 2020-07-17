@@ -15,18 +15,13 @@
 # docker build -f ci/sawtooth-meta-bionic -t sawtooth-meta .
 
 # -------------=== sawtooth-meta build ===-------------
-FROM ubuntu:bionic as sawtooth-meta-builder
+FROM hyperledger/sawtooth-dev:v1 as sawtooth-meta-builder
 
 ENV VERSION=AUTO_STRICT
 
 RUN apt-get update \
- && apt-get install gnupg -y
-
-RUN apt-get update \
  && apt-get install -q -y \
- equivs \
- git \
- python3
+ equivs
 
 COPY . /project
 
