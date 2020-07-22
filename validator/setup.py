@@ -14,7 +14,6 @@
 # ------------------------------------------------------------------------------
 
 import os
-import subprocess
 import sys
 
 from setuptools import setup, find_packages
@@ -46,8 +45,7 @@ if os.path.exists("/lib/systemd/system"):
 
 setup(
     name='sawtooth-validator',
-    version=subprocess.check_output(
-        ['../bin/get_version']).decode('utf-8').strip(),
+    version=os.getenv('REPO_VERSION', '1.99.0-dev').strip(),
     description='Sawtooth Validator',
     author='Hyperledger Sawtooth',
     url='https://github.com/hyperledger/sawtooth-core',
